@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import argparse
 import os
 
 from utils import get_all_users
@@ -39,4 +40,19 @@ def main():
         }}"""
         print(output)
 
-main()
+
+def gen_import():
+    users = get_all_users(query)
+    for user in users:
+        username = user.get('node').get('login')
+        print(f"terraform import github_membership.{simplify(username)} {login}:{username}")
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Generate teams')
+    parser.add_argument('--gen-imports', default=False, action='store_true')
+    args = parser.parse_args()
+    if args.gen_imports:
+        gen_import()
+    else:
+        main()
