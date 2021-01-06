@@ -49,7 +49,7 @@ def main():
             output = f"""
             resource "github_team_membership" "{simplify(team_name)}_{simplify(username)}" {{
                 team_id  = github_team.{simplify(team_name)}.id
-                username = github_membership.{simplify(username)}.id
+                username = github_membership.{simplify(username)}.username
                 role     = "{role.lower()}"
             }}"""
             print(output)
