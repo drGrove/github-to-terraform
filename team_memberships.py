@@ -58,12 +58,13 @@ def main():
 def gen_import():
     teams = get_all_teams(query)
     for team in teams:
+        team_name = team.get('node').get('name')
         users = team.get('node').get('members').get('edges')
         users = sorted(users, key=lambda u: u['node']['login'])
         for user in users:
             username = user['node']['login']
             team_id = team.get('node').get('databaseId')
-            print(f"terraform import github_team_membership.{simplify(username)} {team_id}:{simplify(username)}")
+            print(f"terraform import github_team_membership.{simplify(team_name)}_{simplify(username)} {team_id}:{username}")
 
 
 if __name__ == "__main__":
