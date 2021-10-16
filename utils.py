@@ -7,9 +7,10 @@ import requests
 
 BEARER_TOKEN = os.environ.get("GITHUB_TOKEN")
 GITHUB_GQL_ENDPOINT = os.environ.get("GITHUB_GQL_ENDPOINT", "https://api.github.com/graphql")
+LOGIN = os.environ.get('GITHUB_LOGIN')
 
 headers = {
-    "Authorization": f"Bearer {BEARER_TOKEN}"
+    "Authorization": f"bearer {BEARER_TOKEN}"
 }
 
 
@@ -21,9 +22,14 @@ def run_query(query):
     )
 
     if request.status_code == 200:
-        return request.json()
+        data = request.json()
     else:
-        raise Exception("Query failted to run by returning code of {request.status_code}. {query}")
+        raise Exception(f"Query failed to run by returning code of {request.status_code}. {query}")
+
+    if data.get('errors'):
+        raise Exception(f"Query failed to run by returning code of {request.status_code} and Error: {data.get('errors')}. {query}")
+
+    return data
 
 
 def simplify(name):
@@ -77,6 +83,44 @@ def get_private_repositories(query):
             break
     return sorted(unique(output), key = lambda t: simplify(t['node']['name']))
 
+def get_repositories(repository_filter="first: 100"):
+    query = f"""
+    {{
+        organization(login: "{LOGIN}") {{
+            repositories({repository_filter}) {{
+                totalCount,
+                nodes {{
+                    name,
+                    description,
+                    homepageUrl,
+                    isPrivate,
+                    visibility,
+                    hasIssuesEnabled,
+                    hasProjectsEnabled,
+                    hasWikiEnabled,
+                    mergeCommitAllowed,
+                    squashMergeAllowed,
+                    rebaseMergeAllowed,
+                    deleteBranchOnMerge,
+                }}
+                pageInfo {{
+                  endCursor
+                  hasNextPage
+                }}
+            }}
+        }}
+    }}
+    """
+    data = run_query(query)
+    repos = data.get('data').get('organization').get('repositories')
+    output = repos.get('nodes')
+    hasNextPage = repos.get('pageInfo').get('hasNextPage')
+    if hasNextPage:
+        end_cursor = repos.get('pageInfo').get('endCursor')
+        repository_filter = f'first: 100, after: "{end_cursor}"'
+        output += get_repositories(repository_filter)
+    return sorted(output, key = lambda t: simplify(t['name']))
+
 
 def get_all_users(query):
     data = run_query(query)
@@ -93,3 +137,8 @@ def get_all_users(query):
             break
     return sorted(unique(output), key = lambda t: simplify(t['node']['login']))
 
+def bool_to_str(boolean):
+    if boolean:
+        return "true"
+    else:
+        return "false"
