@@ -362,7 +362,7 @@ def tf_resource_for_actor(actor):
     if typename == "User":
         output = f"github_user.{simplify(actor.get('login'))}.node_id"
     elif typename == "Team" or typename == "App":
-        output = f"github_user.{simplify(actor.get('name'))}.node_id"
+        output = f"github_team.{simplify(actor.get('name'))}.node_id"
     return output
 
 def tf_resources_for_actors(actors):
