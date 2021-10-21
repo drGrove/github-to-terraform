@@ -6,38 +6,8 @@ from utils import simplify
 from utils import get_all_teams
 
 
-login = os.environ.get('GITHUB_LOGIN')
-teams_filter = f"first: 100"
-query = f"""
-{{
-    organization(login: "{login}") {{
-        name,
-        teams({teams_filter}) {{
-            pageInfo {{
-                endCursor,
-            }},
-            totalCount,
-            edges {{
-                node {{
-                    databaseId,
-                    name,
-                    members(membership:IMMEDIATE) {{
-                        edges {{
-                            role,
-                            node {{
-                                login,
-                            }},
-                        }},
-                    }},
-                }},
-            }},
-        }},
-    }},
-}}
-"""
-
 def main():
-    teams = get_all_teams(query)
+    teams = get_all_teams()
 
     for team in teams:
         team_name = team.get('node').get('name')
@@ -56,7 +26,7 @@ def main():
 
 
 def gen_import():
-    teams = get_all_teams(query)
+    teams = get_all_teams()
     for team in teams:
         team_name = team.get('node').get('name')
         users = team.get('node').get('members').get('edges')

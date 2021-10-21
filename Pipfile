@@ -4,9 +4,12 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-requests = "*"
+gql = {extras = ["requests"], version = "v3.0.0a6"}
 
 [dev-packages]
 
 [requires]
 python_version = "3.7"
+
+[pipenv]
+allow_prereleases = true

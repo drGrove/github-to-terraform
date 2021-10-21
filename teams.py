@@ -1,42 +1,12 @@
 #!/usr/bin/env python3
 import argparse
-import os
 
 from utils import get_all_teams
 from utils import simplify
 
 
-login = os.environ.get('GITHUB_LOGIN')
-teams_filter = "first: 100"
-query = f"""
-{{
-    organization(login: "{login}") {{
-        name,
-        teams({teams_filter}) {{
-            pageInfo {{
-                endCursor,
-            }},
-            totalCount,
-            edges {{
-                node {{
-                    name,
-                    databaseId,
-                    description,
-                    privacy,
-                    parentTeam {{
-                        id,
-                        name,
-                    }},
-                }},
-            }},
-        }},
-    }},
-}}
-"""
-
-
 def main():
-    teams = get_all_teams(query)
+    teams = get_all_teams()
 
     for team in teams:
         normalized_team_name = simplify(team.get('node').get('name'))
@@ -57,7 +27,7 @@ def main():
 
 
 def gen_import():
-    teams = get_all_teams(query)
+    teams = get_all_teams()
     for team in teams:
         print(f"terraform import github_team.{simplify(team.get('node').get('name'))} {team.get('node').get('databaseId')}")
 
